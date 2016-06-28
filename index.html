@@ -46,8 +46,9 @@
       <div class="inner clearfix">
         <section id="main-content">
           <h3><a id="welcome-to-github-pages" class="anchor" href="#welcome-to-github-pages" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>The Basics</h3>
-          <p>A very basic approach to modeling of text in JavaScript.</p>
-          
+
+          <p>Generate a random new word based on English words.</p>
+
           <div style="text-align:center;">
             <button id='trainAndGenerateWord' class="mybtn">Generate New Word</button> &nbsp;
             <button id='trainAndGenerateName' class="mybtn">Generate New Name</button>
@@ -56,6 +57,11 @@
           <div id='generatedContainer' style="text-align:center;display:none;">
             <div style="height:7px;"></div>
             <span id='generatedOutput' class='mybtn' style="display:inline-block;width:75%;align:center;">Generated</span>
+          </div>
+
+          <div style="text-align:center;">
+            <div style="height:7px;"></div>
+            <span id='twitter-share-button-area'></span>
           </div>
 <script>
 $(function() {
@@ -105,13 +111,35 @@ $(function() {
         
         return newWord.join("");
     };
+    
+    var updateTwitter = function(word, is) {
+        $('#twitter-share-button-area').empty();
+        var tweet = '';
+
+        if (is === 'word') {
+            tweet = word + " is a brand new word. It means: ";
+        } else {
+            tweet = word + " is my brand new name.";
+        }
+
+        var tweetBtn = $('<a>', {href: "https://twitter.com/intent/tweet",
+                                 class: 'twitter-share-button',
+                                 'data-url': "http://www.1shoe.net/js-ngrams",
+                                 'data-text': tweet,
+                                 'data-hashtags': "wordgenerator",
+                                 'data-size': "large"});
+        $('#twitter-share-button-area').append(tweetBtn);
+        twttr.widgets.load();
+    };
 
     $('#trainAndGenerateWord').on('click', function(event) {
         $(this).blur();
         reset();
         Ngrams3.train(words);
         // 8.136568439587757 average length of words in training.
-        $('#generatedOutput').text(generate(8, false));
+        var w = generate(8, false);
+        updateTwitter(w, 'word');
+        $('#generatedOutput').text(w);
         $('#generatedContainer').show();
     });
 
@@ -120,7 +148,9 @@ $(function() {
         reset();
         Ngrams3.train(names);
         // 7.285966981132075 average length of names in training.
-        $('#generatedOutput').text(generate(7, true));
+        var w = generate(7, true);
+        updateTwitter(w);
+        $('#generatedOutput').text(w);
         $('#generatedContainer').show();
     });
 
@@ -151,7 +181,8 @@ $(function() {
 });
 </script>
 
-          <h3>Select training</h3>
+          <h3>Advanced</h3>
+          <h4>Select training</h4>
           <p>I provided two data sets for training the generator.  They are the proper nouns and regular nouns from a linux word list file.</p>
           <div>
             <select id='input_selection' class="form-control">
@@ -163,7 +194,7 @@ $(function() {
             <span id='trained'></span><br />
           </div>
 
-          <h3>Generate new word (or name)</h3>
+          <h4>Generate new word (or name)</h4>
           <p>Generate a word given the data input used for training.</p>
           <div>
             number of characters to generate: <input id='wordLen' type='text' value='5' />
