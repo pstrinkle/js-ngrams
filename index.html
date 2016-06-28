@@ -59,69 +59,85 @@
           </div>
 <script>
 $(function() {
-    var newWord = [];
 
     var reset = function() {
-        newWord = [];
-        Ngrams.init();
+        Ngrams3.init();
         $('#generatedContainer').hide();
     };
 
-    var build = function(value) {
-        if (value === 0) {
-            return;
+    var generate = function(value, capitalize) {
+        var newWord = [];
+        
+        var build = function(value) {
+            if (value === 0) {
+                return;
+            }
+
+            if (newWord.length == 0) {
+                var a = '|';
+                var c = Ngrams3.generate(a);
+                
+                console.log(a + ' -> ' + c);
+            } else {
+                if (newWord.length == 1) {
+                    var a = '|';
+                } else {
+                    var a = newWord[newWord.length-2];
+                }            
+
+                var b = newWord[newWord.length-1];
+                var c = Ngrams3.generate(a, b);
+
+                console.log(a + ' -> ' + b + ' -> ' + c);
+            }
+
+            newWord.push(c);
+
+            /* could build in reverse with tail recursion. :D */
+            return build(value - 1);
+        };
+
+        build(value);
+
+        if (capitalize) {
+            newWord[0] = newWord[0].toUpperCase();
         }
-
-        if (newWord.length == 0) {
-            var a = '|';
-        } else {
-            var a = newWord[newWord.length-1];
-        }
-
-        var b = Ngrams.generate(a);
-
-        console.log(a + ' -> ' + b);
-
-        newWord.push(b);
-
-        /* could build in reverse with tail recursion. :D */
-        return build(value - 1);
+        
+        return newWord.join("");
     };
 
-	$('#trainAndGenerateWord').on('click', function(event) {
-		$(this).blur();
-	    reset();
-		Ngrams.train(words);
-		// 8.136568439587757 average length of words in training.
-		build(8);
-		$('#generatedOutput').text(newWord.join(""));
-		$('#generatedContainer').show();
-	});
-    $('#trainAndGenerateName').on('click', function(event) {
-    	$(this).blur();
+    $('#trainAndGenerateWord').on('click', function(event) {
+        $(this).blur();
         reset();
-        Ngrams.train(names);
+        Ngrams3.train(words);
+        // 8.136568439587757 average length of words in training.
+        $('#generatedOutput').text(generate(8, false));
+        $('#generatedContainer').show();
+    });
+
+    $('#trainAndGenerateName').on('click', function(event) {
+        $(this).blur();
+        reset();
+        Ngrams3.train(names);
         // 7.285966981132075 average length of names in training.
-        build(7);
-        newWord[0] = newWord[0].toUpperCase();
-        $('#generatedOutput').text(newWord.join(""));
+        $('#generatedOutput').text(generate(7, true));
         $('#generatedContainer').show();
     });
 
     $('#train').on('click', function(event) {
         var selected = $('#input_selection option:selected').val();
 
-        Ngrams.init();
+        Ngrams3.init();
 
         $('#training').addClass('fa-spin');
         $('#trained').empty();
 
         if (selected === 'names') {
             $('#trained').text('trained with ' + names.length + ' names');
-            Ngrams.train(names);
+            Ngrams3.train(names);
         } else if (selected === 'nouns') {
             $('#trained').text('trained with ' + words.length + ' words');
-            Ngrams.train(words);
+            Ngrams3.train(words);
         }
         
         $('#generate').show();
@@ -130,8 +146,7 @@ $(function() {
 
     $('#generate').on('click', function(event) {
         var v = parseInt($('#wordLen').val());
-        build(v);
-        $('#generated').text(newWord.join(""));
+        $('#generated').text(generate(v, false));
     });
 });
 </script>
