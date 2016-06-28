@@ -149,8 +149,9 @@ $(function() {
         Ngrams3.train(names);
         // 7.285966981132075 average length of names in training.
         var w = generate(7, true);
-        updateTwitter(w);
-        $('#generatedOutput').text(w);
+        var l = generate(7, true);
+        updateTwitter(w + ' ' + l, 'name');
+        $('#generatedOutput').text(w + ' ' + l);
         $('#generatedContainer').show();
     });
 
