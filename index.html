@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" media="screen">
+
+    <!-- above the fold, it is render-blocking deliberately. -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <title>js-ngrams by pstrinkle</title>
+    
+    <style>
+.mybtn {
+    font-family: 'Architects Daughter', 'Helvetica Neue', Helvetica, Arial, serif;
+    background-color:#fff;
+    border-radius: 9px;
+    border: 3px solid #9ddcff;
+    padding: 20px;
+    font-weight:bold;
+    font-size: 30px;
+}
+    </style>
+  </head>
+
+  <body>
+    <header>
+      <div class="inner">
+        <h1>js-ngrams</h1>
+        <h2>Generative model for creating brand new words and names</h2>
+        <a href="https://github.com/pstrinkle/js-ngrams" class="button"><small>View project on</small> GitHub</a>
+      </div>
+    </header>
+
+    <div id="content-wrapper">
+      <div class="inner clearfix">
+        <section id="main-content">
+          <h3><a id="welcome-to-github-pages" class="anchor" href="#welcome-to-github-pages" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>The Basics</h3>
+          <p>A very basic approach to modeling of text in JavaScript.</p>
+          
+          <div style="text-align:center;">
+            <button id='trainAndGenerateWord' class="mybtn">Generate New Word</button> &nbsp;
+            <button id='trainAndGenerateName' class="mybtn">Generate New Name</button>
+          </div>
+
+          <div id='generatedContainer' style="text-align:center;display:none;">
+            <div style="height:7px;"></div>
+            <span id='generatedOutput' class='mybtn' style="display:inline-block;width:75%;align:center;">Generated</span>
+          </div>
+<script>
+$(function() {
+    var newWord = [];
+
+    var reset = function() {
+        newWord = [];
+        Ngrams.init();
+        $('#generatedContainer').hide();
+    };
+
+    var build = function(value) {
+        if (value === 0) {
+            return;
+        }
+
+        if (newWord.length == 0) {
+            var a = '|';
+        } else {
+            var a = newWord[newWord.length-1];
+        }
+
+        var b = Ngrams.generate(a);
+
+        console.log(a + ' -> ' + b);
+
+        newWord.push(b);
+
+        /* could build in reverse with tail recursion. :D */
+        return build(value - 1);
+    };
+
+	$('#trainAndGenerateWord').on('click', function(event) {
+		$(this).blur();
+	    reset();
+		Ngrams.train(words);
+		// 8.136568439587757 average length of words in training.
+		build(8);
+		$('#generatedOutput').text(newWord.join(""));
+		$('#generatedContainer').show();
+	});
+    $('#trainAndGenerateName').on('click', function(event) {
+    	$(this).blur();
+        reset();
+        Ngrams.train(names);
+        // 7.285966981132075 average length of names in training.
+        build(7);
+        newWord[0] = newWord[0].toUpperCase();
+        $('#generatedOutput').text(newWord.join(""));
+        $('#generatedContainer').show();
+    });
+
+    $('#train').on('click', function(event) {
+        var selected = $('#input_selection option:selected').val();
+
+        Ngrams.init();
+
+        $('#training').addClass('fa-spin');
+        $('#trained').empty();
+
+        if (selected === 'names') {
+            $('#trained').text('trained with ' + names.length + ' names');
+            Ngrams.train(names);
+        } else if (selected === 'nouns') {
+            $('#trained').text('trained with ' + words.length + ' words');
+            Ngrams.train(words);
+        }
+        
+        $('#generate').show();
+        $('#training').removeClass('fa-spin');
+    });
+
+    $('#generate').on('click', function(event) {
+        var v = parseInt($('#wordLen').val());
+        build(v);
+        $('#generated').text(newWord.join(""));
+    });
+});
+</script>
+
+          <h3>Select training</h3>
+          <p>I provided two data sets for training the generator.  They are the proper nouns and regular nouns from a linux word list file.</p>
+          <div>
+            <select id='input_selection' class="form-control">
+              <option value='names'>english proper nouns</option>
+              <option value='nouns'>english nouns</option>
+            </select>
+            <br />
+            <button id='train'><i id='training' class="fa fa-circle-o-notch" aria-hidden="true"></i> Train</button>
+            <span id='trained'></span><br />
+          </div>
+
+          <h3>Generate new word (or name)</h3>
+          <p>Generate a word given the data input used for training.</p>
+          <div>
+            number of characters to generate: <input id='wordLen' type='text' value='5' />
+            <br />
+            <button id='generate' style='display:none'>Generate random letters</button>
+            <br />
+            New word: <span id='generated'></span>
+          </div>
+
+          <h3>License</h3>
+          <p><a href="http://www.apache.org/licenses/LICENSE-2.0">Apache License 2.0</a></p>
+
+          <h3><a id="support-or-contact" class="anchor" href="#support-or-contact" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Support or Contact</h3>
+          <a href="https://twitter.com/YammyCozonac" class="twitter-follow-button" data-show-count="false" data-size="large">Follow @YammyCozonac</a> <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
+          <a class="github-button" href="https://github.com/pstrinkle" data-style="mega" aria-label="Follow @pstrinkle on GitHub">Follow @pstrinkle</a>
+          <!-- <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span> -->
+          <script async defer src="https://buttons.github.io/buttons.js"></script>
+        </section>
+
+        <aside id="sidebar">
+          <a href="https://github.com/pstrinkle/js-ngrams/zipball/master" class="button">
+            <small>Download</small>
+            .zip file
+          </a>
+          <a href="https://github.com/pstrinkle/js-ngrams/tarball/master" class="button">
+            <small>Download</small>
+            .tar.gz file
+          </a>
+
+          <p class="repo-owner"><a href="https://github.com/pstrinkle/javascript-modeling"></a> is maintained by <a href="https://github.com/pstrinkle">pstrinkle</a>.</p>
+        </aside>
+      </div>
+    </div>
+
+    <script src="assets/names.min.js"></script>
+    <script src="assets/words.min.js"></script>
+    <script src="src/ngrams.js"></script>
+
+  </body>
+</html>
