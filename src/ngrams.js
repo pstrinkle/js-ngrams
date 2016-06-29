@@ -32,8 +32,12 @@
          */
         bigrams: {},
 
+        /* for reference. */
+        alphabet: {},
+
         init: function() {
             this.bigrams = {};
+            this.alphabet = {};
             return;
         },
 
@@ -71,6 +75,9 @@
                     var t0 = l[j];
                     var t1 = l[j+1];
                     this.addBigram(t0, t1);
+
+                    this.alphabet[t0] = 1; /* just boolean. */
+                    this.alphabet[t1] = 1;
                 }
             }
 
@@ -81,8 +88,8 @@
             curr = curr.toLowerCase();
 
             if (this.bigrams[curr] == undefined) {
-                /* we have no idea..., could rely on part-of-speech, or
-                 * ... a few other optiosn.
+                /* We don't know what to draw, should just randomly draw from
+                 * the alphabet.
                  */
                 return "";
             }
@@ -129,7 +136,9 @@
          * likely have that operation occur whenever it learns from a new document.
          */
         trigrams: {},
-            
+
+        alphabet: {},
+
         getTrigrams: function() {
             return this.trigrams;
         },
@@ -163,6 +172,7 @@
         init: function() {
             this.trigrams = {};
             this.starts = {};
+            this.alphabet = {};
             return;
         },
 
@@ -186,6 +196,10 @@
                     var t1 = l[j+1];
                     var t2 = l[j+2];
                     this.addTrigram(t0, t1, t2);
+
+                    this.alphabet[t0] = 1; /* just boolean for now */
+                    this.alphabet[t1] = 1;
+                    this.alphabet[t2] = 1;
                 }
             }
 
@@ -219,10 +233,12 @@
                 prev = prev.toLowerCase();
                 curr = curr.toLowerCase();
 
-                /* we have no idea..., could rely on part-of-speech, or a few 
-                 * other optiosn.
-                 */
-                if (this.trigrams[prev] == undefined || this.trigrams[prev][curr] == undefined) {
+                if (this.trigrams[prev] == undefined ||
+                    this.trigrams[prev][curr] == undefined) {
+                    /* we don't know what's next, so just randomly draw.
+                     * we could randomly draw based on how often the letters 
+                     * occurred in a tf*idf way.
+                     */
                     return "";
                 }
 
