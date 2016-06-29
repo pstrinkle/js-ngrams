@@ -25,7 +25,7 @@
     <![endif]-->
 
     <title>js-ngrams by pstrinkle</title>
-    
+
     <style>
 .mybtn {
     font-family: 'Architects Daughter', 'Helvetica Neue', Helvetica, Arial, serif;
@@ -40,7 +40,6 @@
     background-color:#666;
     color:#fff;
 }
-
     </style>
   </head>
 
@@ -76,34 +75,48 @@
           </div>
 <script>
 $(function() {
+	var numberWithCommas = function(x) {
+	    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+	};
+
+    var wordsModel = new Ngrams3();
+    var namesModel = new Ngrams3();
+    var unModel = new Ngrams3();
+
+    wordsModel.train(words);
+    namesModel.train(names);
+
+    $('#namecnt').text(numberWithCommas(names.length));
+    $('#wordcnt').text(numberWithCommas(words.length));
 
     var reset = function() {
-        Ngrams3.init();
         $('#generatedContainer').hide();
     };
 
-    var generate = function(value, capitalize) {
+    var generate = function(value, capitalize, model) {
         var newWord = [];
-        
+
         var build = function(value) {
+            var a, b, c = '';
+            
             if (value === 0) {
                 return;
             }
 
             if (newWord.length == 0) {
-                var a = '|';
-                var c = Ngrams3.generate(a);
-                
+                a = '|';
+                c = model.generate(a);
+
                 console.log(a + ' -> ' + c);
             } else {
                 if (newWord.length == 1) {
-                    var a = '|';
+                    a = '|';
                 } else {
-                    var a = newWord[newWord.length-2];
+                    a = newWord[newWord.length-2];
                 }            
 
-                var b = newWord[newWord.length-1];
-                var c = Ngrams3.generate(a, b);
+                b = newWord[newWord.length-1];
+                c = model.generate(a, b);
 
                 console.log(a + ' -> ' + b + ' -> ' + c);
             }
@@ -119,7 +132,7 @@ $(function() {
         if (capitalize) {
             newWord[0] = newWord[0].toUpperCase();
         }
-        
+
         return newWord.join("");
     };
     
@@ -146,9 +159,8 @@ $(function() {
     $('#trainAndGenerateWord').on('click', function(event) {
         $(this).blur();
         reset();
-        Ngrams3.train(words);
         // 8.136568439587757 average length of words in training.
-        var w = generate(8, false);
+        var w = generate(8, false, wordsModel);
         updateTwitter(w, 'word');
         $('#generatedOutput').text(w);
         $('#generatedContainer').show();
@@ -157,10 +169,9 @@ $(function() {
     $('#trainAndGenerateName').on('click', function(event) {
         $(this).blur();
         reset();
-        Ngrams3.train(names);
         // 7.285966981132075 average length of names in training.
-        var w = generate(7, true);
-        var l = generate(7, true);
+        var w = generate(7, true, namesModel);
+        var l = generate(7, true, namesModel);
         updateTwitter(w + ' ' + l, 'name');
         $('#generatedOutput').text(w + ' ' + l);
         $('#generatedContainer').show();
@@ -169,33 +180,57 @@ $(function() {
     $('#train').on('click', function(event) {
         var selected = $('#input_selection option:selected').val();
 
-        Ngrams3.init();
+        unModel.init();
 
         $('#training').addClass('fa-spin');
         $('#trained').empty();
 
         if (selected === 'names') {
             $('#trained').text('trained with ' + names.length + ' names');
-            Ngrams3.train(names);
+            unModel.train(names);
         } else if (selected === 'nouns') {
             $('#trained').text('trained with ' + words.length + ' words');
-            Ngrams3.train(words);
+            unModel.train(words);
         }
-        
+
         $('#generate').show();
         $('#training').removeClass('fa-spin');
     });
 
     $('#generate').on('click', function(event) {
         var v = parseInt($('#wordLen').val());
-        $('#generated').text(generate(v, false));
+        $('#generated').text(generate(v, false, unModel));
     });
 });
 </script>
 
           <h3>Advanced</h3>
+          <h4>Training Set Details</h4>
+
+          <p>The above word generator is trained with 
+            <span id='wordcnt'></span> words, while the name generator trained 
+            with <span id='namecnt'></span> names.  The list of names and words 
+            were pulled from a linux systems's english words file.
+          </p>
+
+          <p>The generator produces new words randomly by sequentially 
+            requesting letters.  Each letter requested is the result of a random
+            variable that is influenced by the previous two letters in the 
+            sequence.  This influence provides the generator with the ability to
+            randomly create new words that follow similar spelling guidelines to
+            English words.
+          </p>
+
+          <p>In more straightforward terms, each letter is drawn based on what
+            letters are already in the word.  Consider that 'th' is a common piece
+            of a word in English.  Therefore if the previous letter is 't' there's
+            a decent chance the next will be 'h'.
+          </p>
+
           <h4>Select training</h4>
-          <p>I provided two data sets for training the generator.  They are the proper nouns and regular nouns from a linux word list file.</p>
+          <p>I provided two data sets for training the generator.  They are the
+            proper nouns and regular nouns from a linux word list file.
+          </p>
           <div>
             <select id='input_selection' class="form-control">
               <option value='names'>english proper nouns</option>
