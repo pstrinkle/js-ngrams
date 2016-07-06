@@ -38,7 +38,6 @@
 }
 .mybtn:active { background-color:#666; color:#fff; }
 ul.here { margin: 0; padding: 0; list-style-type: none; }
-ul.here li { display: inline; }
     </style>
   </head>
 
@@ -57,7 +56,7 @@ ul.here li { display: inline; }
           <h3><a id="welcome-to-github-pages" class="anchor" href="#welcome-to-github-pages" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>The Basics</h3>
 
           <p>Generate a random new word or name based on English words and English spellings of names of places, such as 
-            <ul class='here' id='inlinenames'><li></li></ul></p>
+            <ul class='here'><li id='inlinenames' style="display:inline;"></li></ul></p>
 
           <div style="text-align:center;">
             <button id='trainAndGenerateWord' class="mybtn">Generate New Word</button> &nbsp;
@@ -85,18 +84,12 @@ $(function() {
 
     wordsModel.train(words);
     namesModel.train(names);
-    
-    var $gohere = $('#inlinenames');
 
+    var $gohere = $('#inlinenames');
     setInterval(function() {
-        var children = $gohere.children();
         var nextWord = generate(7, true, namesModel);
-        var $li = $('<li>', {text: nextWord, style: "display:inline;"});
-        var $first = $(children[0]);
-        $first.remove();
-        $gohere.append($li);
-        $li.show();
-    }, 500) // inlinenames
+        $gohere.text(nextWord);
+    }, 500)
 
     $('#namecnt').text(numberWithCommas(names.length));
     $('#wordcnt').text(numberWithCommas(words.length));
