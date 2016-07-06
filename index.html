@@ -57,7 +57,7 @@ ul.here li { display: inline; }
           <h3><a id="welcome-to-github-pages" class="anchor" href="#welcome-to-github-pages" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>The Basics</h3>
 
           <p>Generate a random new word or name based on English words and English spellings of names of places, such as 
-            <ul class='here'><li></li></ul></p>
+            <ul class='here' id='inlinenames'><li></li></ul></p>
 
           <div style="text-align:center;">
             <button id='trainAndGenerateWord' class="mybtn">Generate New Word</button> &nbsp;
@@ -75,9 +75,9 @@ ul.here li { display: inline; }
           </div>
 <script>
 $(function() {
-	var numberWithCommas = function(x) {
-	    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-	};
+    var numberWithCommas = function(x) {
+        return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    };
 
     var wordsModel = new Ngrams3();
     var namesModel = new Ngrams3();
@@ -85,6 +85,20 @@ $(function() {
 
     wordsModel.train(words);
     namesModel.train(names);
+    
+    var $gohere = $('#inlinenames');
+
+    setInterval(function() {
+        var children = $gohere.children();
+        var nextWord = generate(7, true, namesModel);
+        var $li = $('<li>', {text: nextWord, style: "display:none;"});
+        var $first = $(children[0]);
+        $first.hide();
+        $gohere.append($li);
+        $li.slideDown(100, function() {
+            $first.remove();	
+        });
+    }, 500) // inlinenames
 
     $('#namecnt').text(numberWithCommas(names.length));
     $('#wordcnt').text(numberWithCommas(words.length));
