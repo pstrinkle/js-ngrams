@@ -91,13 +91,11 @@ $(function() {
     setInterval(function() {
         var children = $gohere.children();
         var nextWord = generate(7, true, namesModel);
-        var $li = $('<li>', {text: nextWord, style: "display:none;"});
+        var $li = $('<li>', {text: nextWord, style: "display:inline;"});
         var $first = $(children[0]);
-        $first.hide();
+        $first.remove();
         $gohere.append($li);
-        $li.slideDown(100, function() {
-            $first.remove();	
-        });
+        $li.show();
     }, 500) // inlinenames
 
     $('#namecnt').text(numberWithCommas(names.length));
